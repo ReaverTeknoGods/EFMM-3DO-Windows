@@ -16,7 +16,7 @@ CASTLE_CO =	ctst.o rend.o shoot.o objects.o ob_zombie.o ob_george.o \
 		clip.o levelfile.o leveldef.o genmessage.o statscreen.o \
 		thread.o titleseq.o imgfile.o loadloaf.o file.o timing.o \
 		sound.o soundinterface.o cinepak.o map.o option.o \
-		elkabong.o
+		elkabong.o cinepak_decode.o
 FONT_O =	font.co font.so
 CASTLE_AO =	misc.o project.o
 CASTLE_O =	$(CASTLE_CO) $(CASTLE_AO)

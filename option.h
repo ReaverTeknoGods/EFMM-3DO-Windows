@@ -1,9 +1,12 @@
 /*  :ts=8 bk=0
  *
- * option.h:	Common definitions you need to know.
+ * option.h:	Common definitions you need to know - Ported for Cross-platform.
  *
  * Leo L. Schwab					9310.22
+ * Ported to SDL2/Cross-platform                        2024
  */
+
+#include "threedo_compat.h"
 
 ///////////////////////////////////////
 // Data Structures and defines important to me and possibly you (at least the

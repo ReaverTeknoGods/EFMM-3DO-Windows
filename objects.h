@@ -1,12 +1,14 @@
 /*  :ts=8 bk=0
  *
- * objects.h:	General and specific definitions for objects.
+ * objects.h:	General and specific definitions for objects - Ported for Cross-platform.
  *
  * Leo L. Schwab					9306.30
+ * Ported to SDL2/Cross-platform                        2024
  */
 #ifndef	_OBJECTS_H
 #define	_OBJECTS_H
 
+#include "threedo_compat.h"
 #ifndef	_CASTLE_H
 #include "castle.h"
 #endif

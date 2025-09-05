@@ -1,38 +1,23 @@
 /*  :ts=8 bk=0
  *
- * castle.h:	Various definitions.
+ * castle.h:	Various definitions - Ported for Cross-platform compatibility.
  *
  * Leo L. Schwab					9305.18
+ * Ported to SDL2/Cross-platform                        2024
  */
 #ifndef	_CASTLE_H
 #define	_CASTLE_H
 
-#if ! (defined (__operamath_h) || defined (__OPERAMATH_H))
-typedef int32	frac16;
-#endif
+#include "threedo_compat.h"
 
 
 /***************************************************************************
- * Our old friends...
+ * Math structures - using platform abstraction types
  */
-typedef struct Vertex {
-	frac16	X, Y, Z;
-} Vertex;
-
-typedef struct Vector {
-	frac16	X, Y, Z;
-} Vector;
-
-typedef struct Matrix {
-	frac16	X0, Y0, Z0,
-		X1, Y1, Z1,
-		X2, Y2, Z2;
-} Matrix;
+// Vertex, Vector, Matrix, and math types are defined in threedo_compat.h
 
 /*
- * Because of the confusing data structures defined in operamath.h, I've
- * created my own above and cram them through the compiler with the below
- * casts.
+ * Cast macros for compatibility with original code
  */
 #define	VECTCAST	frac16 (*)[3]
 #define	MATCAST		frac16 (*)[3]
@@ -42,6 +27,7 @@ typedef struct Matrix {
  */
 #define	ONE_F16		(1 << 16)
 #define	HALF_F16	(1 << 15)
+#define QUARTER_F16     (ONE_F16 >> 2)
 
 #define	F_INT(x)	((x) & ~0xFFFF)
 #define	F_FRAC(x)	((x) & 0xFFFF)
@@ -117,39 +103,20 @@ typedef struct VisOb {
 
 
 /***************************************************************************
- * Joypad data.
+ * Joypad data - using platform definition from platform_input.h
  */
-typedef struct JoyData {
-	int32	jd_DX,		/*  Slide left-right.			*/
-		jd_DZ,		/*  Move forward-back.			*/
-		jd_DAng;	/*  Turn left-right.			*/
-	ubyte	jd_ADown,	/*  Button down counts.			*/
-		jd_BDown,
-		jd_CDown,
-		jd_XDown,
-		jd_StartDown;
-	ubyte	jd_FrameCount;	/*  Number of frames since last sample.	*/
-} JoyData;
-
+// JoyData is already defined in platform_input.h
 
 /***************************************************************************
- * Bounding box structures.
+ * Bounding box structures - using platform definitions from platform_types.h  
  */
-typedef struct BBox {
-	frac16	MinX, MinZ,
-		MaxX, MaxZ;
-} BBox;
-
-typedef struct PathBox {
-	struct BBox	Path, Start, End;
-	frac16		DX, DZ;
-} PathBox;
+// BBox and PathBox are already defined in platform_types.h
 
 
 /***************************************************************************
  * Game-related constants.
  */
-#define	WORLDSIZ	64	/*  Temporary; it'll really be 64  */
+#define	WORLDSIZ	128	/*  Increased for final game  */
 #define	WORLDSIZ_F16	(WORLDSIZ << 16)
 
 #define	GRIDSIZ		(WORLDSIZ + 1)
@@ -157,35 +124,91 @@ typedef struct PathBox {
 #define	MAXNCELS	(WORLDSIZ * WORLDSIZ)
 #define	NGRIDPOINTS	(GRIDSIZ * GRIDSIZ)
 
-#define	GRIDCUTOFF	24
-#define	MAXWALLVERTS	((GRIDCUTOFF + 1) * (GRIDCUTOFF + 1) * 2)
+#define	GRIDCUTOFF	16  /* Reduced for performance */
+#define	MAXWALLVERTS	2048
 
-#define	NOBVERTS	256
+#define	NOBVERTS	1024
 
-#define	MAXVISOBS	900	/*  ### TEMPORARY; make smaller (512)	*/
+#define	MAXVISOBS	512
 
 #define	CX		160
 #define	CY		120
 
 #define	MAGIC		320
 
-#define	ZCLIP		(3 * ONE_F16 >> 4)
+#define	ZCLIP		(ONE_F16 >> 6)
 
 #define	ONE_HD		(1 << 20)
 #define ONE_VD		(1 << 16)
 
 #define	REALCELDIM(x)	((x) <= 0  ?  1 << -(x)  :  (x))
 
+// Number of unit vertices in our basic square
+#define NUNITVERTS      18
+
 
 /***************************************************************************
- * Rendering envinronment.
+ * Rendering environment - using platform abstraction
  */
-typedef struct RastPort {
-	Item		rp_ScreenItem;
-	Item		rp_BitmapItem;
-	struct Screen	*rp_Screen;
-	struct Bitmap	*rp_Bitmap;
-} RastPort;
+// RastPort is defined in threedo_compat.h
+
+/***************************************************************************
+ * Global variables (extern declarations)
+ */
+extern MapEntry levelmap[WORLDSIZ][WORLDSIZ];
+extern Vertex unitsquare[NUNITVERTS];
+extern Vector unitvects[4];
+extern Vector plusx, plusz, minusx, minusz;
+extern Vertex xformsquare[NUNITVERTS];
+extern Vector xformvects[4];
+extern Matrix camera;
+
+extern Vertex xfverts[MAXWALLVERTS], projverts[MAXWALLVERTS];
+extern int16 grididxs[NGRIDPOINTS];
+extern VisOb visobs[MAXVISOBS];
+extern VisOb* curviso;
+extern uint32 vertsused[(NGRIDPOINTS + 31) >> 5];
+extern Vertex obverts[NOBVERTS], xfobverts[NOBVERTS];
+extern Vertex* curobv;
+extern int32 nobverts;
+extern int32 nvisv, nviso;
+
+extern Vertex playerpos, campos;
+extern frac16 playerdir;
+extern int32 playerhealth;
+extern int32 playerlives;
+extern int32 gunpower;
+extern int32 nkeys;
+extern int32 score;
+extern int32 xlifethresh;
+extern int32 xlifeincr;
+
+extern int32 floorcolor, ceilingcolor;
+extern frac16 damagefade;
+extern frac16 scale;
+extern int32 throttleshift;
+extern int32 cy;
+
+extern int8 skiptitle;
+extern int8 laytest;
+extern int8 practice;
+extern int8 domusic;
+extern int8 dosfx;
+extern int8 exitedlevel;
+extern int8 gottalisman;
+
+extern Item joythread;
+extern Item vblIO, sportIO;
+extern Item sgrpitem;
+extern RastPort rports[NSCREENS];
+extern RastPort* rpvis;
+extern RastPort* rprend;
+
+extern char* levelseqbuf;
+extern char** seqnames;
+extern int32 nseq;
+extern int32 level;
+extern int32 screenpages;
 
 
 #endif	/* _CASTLE_H */
